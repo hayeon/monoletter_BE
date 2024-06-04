@@ -5,23 +5,23 @@ from openai import OpenAI
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 # OpenAI
-def callGpt(letter,title):
-    jobinfo = " Kotlin을 이용한 안드로이드 개발이 가능하신 분, Android Service를 이용한 어플리케이션 경험, Java, Kotlin 개발에 능숙하신 분, Custom UI Component 개발이 가능하신 분"
+def callGpt(letter,title,detail):
     goodLetter = "글의 주제로 이야기를 시작하는가? 한 문장 당 띄어쓰기 제외 60글자 이내로 작성하였는가? , 구체적인 경험의 예시를 보여주는가?"
-    job = "안드로이드 개발자"
     try:
         # 자기소개서 체크 및 피드백 생성
        completion = client.chat.completions.create(
-            model="gpt-4-0125-preview",
+              model= "gpt-4-0125-preview", temperature=0,
             messages=[
                 {"role": "system", "content": "너는 자기소개서 첨삭 전문가야. 너는 사용자의 자기소개서를 검토하고, 평가해. 또한 지원하는 취업 분야에 대한 요구사항을 잘 알고 있어"},
-                {"role": "user", "content": f"나는 회사에 지원하는데 너의 도움이 필요해. 나의 직무는 {job} "},
+                {"role": "user", "content": f"나는 회사에 지원하는데 너의 도움이 필요해. 나의 직무는 {detail} "},
                 {"role": "assistant", "content": "네, 당신의 직무를 확인했습니다."},
-                {"role": "user", "content": f"해당 직무는 다음과 같은 사람을 선호해. {jobinfo}"},
+                {"role": "user", "content": f"{detail} 직무에서 어떤 역량을 선호하는지 조사하고 이를 반영해."},
                 {"role": "assistant", "content": "네, 알겠습니다."},
                 {"role": "user", "content": f"나의 자기소개서 질문은 다음과 같아. {title}"},
                 {"role": "assistant", "content": "네, 알겠습니다."},
                 {"role": "user", "content": f"나의 자기소개서는 다음과 같아 {letter}"},
+                {"role": "assistant", "content": "네, 알겠습니다."},
+                {"role": "user", "content": f"자기소개서에  '적극적', '성실함', '배려심', '냉철한 판단력', '뜨거운 열정',  '내성적인 면' 등 추상적인 단어를 사용하면 이를 지적해줘."},
                 {"role": "assistant", "content": "네, 알겠습니다."},
                 {"role": "user", "content": f"나의 자기소개서가 몇 분단으로 구분되는지 확인해. 문단은 \\n\\n으로 구분되어야 해."},
                 {"role": "assistant", "content": "네, 알겠습니다."},
@@ -29,7 +29,7 @@ def callGpt(letter,title):
                 {"role": "assistant", "content": "네, 알겠습니다."},
                 {"role": "user", "content": f"무조건 첫 문장은 첫번째 문단: 으로 시작해야돼. 절대로 다른 말로 시작하지마."},
                 {"role": "assistant", "content": "네, 알겠습니다."},
-                {"role": "user", "content": f"문단 별로 첨삭을 해주고, 마지막에 내 자소서가 어떤지 한문장으로 정리해줘 딱 한문장으로만. "},
+                {"role": "user", "content": f"문단별로 첨삭을 해주고, 마지막에 내 자소서가 어떤지 한문장으로 정리해줘 딱 한문장으로만. "},
                 {"role": "assistant", "content": "네, 알겠습니다."},
             ],
             stream=False,  # 수정: 실시간 스트리밍이 필요없는 경우 False로 설정
