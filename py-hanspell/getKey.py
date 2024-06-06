@@ -34,8 +34,20 @@ def fix_spell_checker_py_code(file_path, passportKey):
 def speller(text):
     passport_key = get_passport_key()
     if passport_key:
-        spelled_text = spell_checker.check(text)
-        return spelled_text
+        print(f"passportKey: {passport_key}")
+        temp = "{{NEW_PARAGRAPH}}"
+        preprocessed_text = text.replace('\n', temp)
+        result = spell_checker.check(preprocessed_text)
+        print(result)
+        res = {
+        'original': result.original.replace(temp, '\n'), 
+        'checked': result.checked.replace(temp, '\n'), 
+        'errors': result.errors
+    }   
+        print(res)
+        return res
+
+
     else:
         print("passportKey를 찾을 수 없습니다.")
         

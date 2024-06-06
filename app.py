@@ -124,7 +124,7 @@ def add_letter():
             "mainTitle": mainTitle,
             "subTitles": [{
                 "subTitle_id": subTitle_id,  # 각 subTitle에 대한 고유 ID 생성
-                "subTitle": "",
+                "subTitle": "새로운 자기소개서",
                 "letter": "",
                 "feedback": ""
             }]
@@ -207,7 +207,7 @@ def load_letter():
 def loadAll_letter():
     data = request.json
     email = data.get('email') #접속한 유저정보 
-    mainTitle_id = data.get('mainTitle_id')
+    mainTitle_id = data.get('main                   Title_id')
 
     if not email or not mainTitle_id:
         return jsonify({'status': 400, 'message': 'Missing required fields'}), 400 #도착 데이터가 없을 때
@@ -360,12 +360,63 @@ def add_subletter():
         print(e)
         return jsonify({'status': 500, 'message': 'Internal server error occurred.'}), 500
 
+
+@app.route('/delsubletter', methods=['POST'])
+def del_letter():
+    data = request.json
+    email = data.get('email')
+    mainTitle_id  = data.get('mainTitle_id')
+    subTitle_id = data.get('subTitle_id')
+    
+    if not email or not mainTitle_id or not subTitle_id:
+        return jsonify({'status': 400, 'message': 'Missing required fields'}), 400
+    
+    MONGO_URI = database_url
+    client = MongoClient(MONGO_URI)
+    db = client.monoletter
+    print(data)
+    # 이메일 일치 사용자 확인
+    user = db.users.find_one({"email": email})
+    if not user:
+        return jsonify({'status': 400, 'message': 'User not found'}), 400
+    userId = user['_id']
+    # 자기소개서 저장
+ 
+    mainTitle_id = ObjectId(mainTitle_id)  # 문자열을 ObjectId로 변환
+    subTitle_id = ObjectId(subTitle_id)    # 문자열을 ObjectId로 변환
+    result = db.letters.update_one(
+            {"_id": mainTitle_id, "subTitles.subTitle_id": subTitle_id},
+            {"$pull": {"subTitles": {"subTitle_id": subTitle_id}}}
+        )
+        
+    if result.modified_count == 0:
+        return jsonify({'status': 404, 'message': 'SubTitle not found'}), 404
+
+    return jsonify({
+            'status': 200,
+            'message': 'SubTitle successfully deleted'
+        }), 200
+        
+
 @app.route('/speller', methods=['POST'])
 def check_spelling():
     letter = request.json.get('letter')
     res = speller(letter)
-    return jsonify(res)
+    try:
+        response = {
+            "original": str(res['original']),
+            "checked": str(res['checked']),
+            "errors": str(res['errors']),
+        }
+        print(response)
+        return jsonify(response)
+
     
+
+
+    except Exception as e:
+        print(e)
+        return jsonify({'status': 500, 'message': 'Internal server error occurred.'}), 500
 
 
 
