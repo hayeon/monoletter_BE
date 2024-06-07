@@ -207,7 +207,7 @@ def load_letter():
 def loadAll_letter():
     data = request.json
     email = data.get('email') #접속한 유저정보 
-    mainTitle_id = data.get('main                   Title_id')
+    mainTitle_id = data.get('mainTitle_id')
 
     if not email or not mainTitle_id:
         return jsonify({'status': 400, 'message': 'Missing required fields'}), 400 #도착 데이터가 없을 때
@@ -419,7 +419,36 @@ def check_spelling():
         return jsonify({'status': 500, 'message': 'Internal server error occurred.'}), 500
 
 
+@app.route('/updatedetail', methods=['PUT'])
+def update_detail():
+    # 클라이언트로부터 이메일과 새로운 detail을 받음
+    user_info = request.json
+    if not user_info:
+        print("사용자 정보가 비어있습니다.")
+        return "사용자 정보가 비어있습니다.", 400
+    email = user_info.get('email')
+    name = user_info.get('name')
+    detail = user_info.get('detail')
+    print(user_info)
+    # joinUser(name, email, detail)
+    new_detail = user_info.get('detail')
+    MONGO_URI = database_url
+    client = MongoClient(MONGO_URI)
+    db = client.monoletter
 
+    # 이메일과 일치하는 사용자 찾기
+    result = db.users.update_one(
+        {"email": email},
+        {"$set": {"detail": new_detail}}
+    )
+
+    # 업데이트 성공 여부에 따라 응답 반환
+    if result.matched_count:
+        print("detail을 db에 저장하였습니다")
+        return jsonify({"msg": "Detail updated successfully"}), 200
+    else:
+        print("detail을 db에 저장하지 못했습니다")
+        return jsonify({"msg": "User not found"}), 404
     
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port="5000", debug=True)
